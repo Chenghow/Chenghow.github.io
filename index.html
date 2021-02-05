@@ -8,20 +8,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="Hou Cing">
   <meta name="keywords" content="houcing">
-  <meta name="description" content="个人博客，网志，部落格">
+  <meta name="description" content="Chenghow's blog.">
   <script id="hexo-configurations">
   var CONFIG = {
     root: '/',
     theme: 'lx',
     version: '0.3.9',
     localsearch:{
-      "enable": false,
+      "enable": true,
       "trigger": "auto",
       "top_n_per_article": 1,
       "unescape": false,
       "preload": false
       },
-    path: '-'
+    path: 'search.xml'
   };
 </script>
 
@@ -58,17 +58,34 @@
 	}); 
 	</script>
   
-  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+  <link rel="stylesheet" href="//fonts.proxy.ustclug.org/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
 <meta name="generator" content="Hexo 5.3.0"><link rel="alternate" href="/atom.xml" title="Houcing" type="application/atom+xml">
 </head>
 <body>
 <div id="page">
+<a href="javascript:;" class="popup-trigger"><i class="menu-item-icon fa fa-search fa-fw"></i></a>
+<div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Search..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
 
 <div id="lx-aside" style="background-image: url(//cdn.jsdelivr.net/npm/theme-lx@0.3.9/source/images/cover.jpeg)">
   <div class="overlay">
   <div class="featured">
-    <div class="avatar"><a href="/"><img src="/images/avatar.jpeg"></a></div>
+    <div class="avatar"><a href="/"><img src="http://q1.qlogo.cn/g?b=qq&nk=3183309227&s=640"></a></div>
     <span>Hou Cing</span>
     <h1>Houcing</h1>
     <span>——Chenghow的个人博客</span>
@@ -84,9 +101,8 @@
     <div>
       <h2 class="title"><a href="/2021/02/04/hello-world/">Hello World</a></h2>
       <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2021-02-04</span>
-      <p><p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2></p>
-      <div class="post-button"><a class="btn" href="/2021/02/04/hello-world/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+      <p><p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p></p>
+      <div class="post-button"><a class="btn" href="/2021/02/04/hello-world/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>阅读更多</a></div>
     </div>
   </div>
 
@@ -114,32 +130,33 @@
       <div class="col">
         <div class="row for-pic">
           <div class="profile-pic">
-            <a href="/"><img src="/images/avatar.jpeg" alt="Hou Cing"/></a>
+            <a href="/"><img src="http://q1.qlogo.cn/g?b=qq&nk=3183309227&s=640" alt="Hou Cing"/></a>
           </div>
         </div>
         <div class="row for-name">
           <p>Hou Cing</p>
-          <span class="tagline">Hello, World!</span>
+          <span class="tagline">既然选择了远方,便只顾风雨兼程</span>
         </div>
       </div>
     </span>
   </div>
   <nav class="menu-container">
   <ul class="menu-items">
-    <li><a href="/"><i class="fa fa-home fa-fw"></i>Home</a></li>
-    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>首页</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>归档</a></li>
     
     <li class="has-sub"><span class="dropdown-heading">
-      <i class="fa fa-bookmark fa-fw"></i>Pages</span>
+      <i class="fa fa-bookmark fa-fw"></i>页面</span>
         <ul>
           <li><a href="/guestbook/">Guestbook</a></li>
         <li><a href="/about/">About</a></li>
         </ul>
     </li>
     <li class="has-sub"><span class="dropdown-heading">
-      <i class="fa fa-link fa-fw"></i>Friends</span>
+      <i class="fa fa-link fa-fw"></i>友链</span>
         <ul>
           <li> <a href="https://lx.js.org" target="_blank">Theme-Lx</a></li>
+        <li> <a href="http://huoyiming.cf:2005" target="_blank">Yiming&#39;s blog</a></li>
         </ul>
     </li>
   </ul>
@@ -175,7 +192,7 @@
 	});
 }());
 </script>
-
+<script src="//cdn.jsdelivr.net/npm/theme-lx@0.3.9/source/js/local.search.js"></script>
 
 </body>
 </html>
