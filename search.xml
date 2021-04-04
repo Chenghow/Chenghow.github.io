@@ -1,8 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>青年大摸鱼</title>
+    <url>/undefined/49d2f037.html</url>
+    <content><![CDATA[<div class="note warning">
+            <h3 id="看完这篇文章，请不要再不完成青年大学习"><a href="#看完这篇文章，请不要再不完成青年大学习" class="headerlink" title="看完这篇文章，请不要再不完成青年大学习"></a>看完<kbd>这篇</kbd>文章，请<kbd>不要</kbd>再不完成青年大学习</h3>
+          </div>
+<a id="more"></a>
+<blockquote>
+<p>本教程可能不适合早期青年大学习使用</p>
+</blockquote>
+<blockquote>
+<p>教程由电脑演示，手机中有类似功能的浏览器也可使用(如:via)</p>
+</blockquote>
+<h1 id="跳过视频"><a href="#跳过视频" class="headerlink" title="跳过视频"></a>跳过视频</h1><h2 id="1-微信中选择一期来做"><a href="#1-微信中选择一期来做" class="headerlink" title="1.微信中选择一期来做"></a>1.微信中选择一期来做</h2><p><img src="https://i.loli.net/2021/04/04/aUsE85ucTSG4Zwv.jpg" alt="这里我们选第十一期"></p>
+<h2 id="2-复制链接发送至电脑"><a href="#2-复制链接发送至电脑" class="headerlink" title="2.复制链接发送至电脑"></a>2.复制链接发送至电脑</h2><p><img src="https://i.loli.net/2021/04/04/8gjcKQh3xkHT1fE.jpg" alt="图片错了，下面的演示应该是第三期"><br><img src="https://i.loli.net/2021/04/04/ymD8iEnBavYcUGk.jpg" alt="处于安全考虑，本文章对链接等可能泄露隐私的图片打码"></p>
+<blockquote>
+<p>打码部分（一堆字母数字）就是你的识别码，对应的是你的身份,所以可以复制到电脑,不需要登陆<br><img src="https://i.loli.net/2021/04/04/sP6jI8fDLpnJZNX.jpg" alt="succeed.jpg"></p>
+</blockquote>
+<blockquote>
+<p>早期青年大学习是没有这个的（图片上面未打码的链接），不适用本教程<br>复制到电脑是如下画面<br><img src="https://i.loli.net/2021/04/04/lE39xHSiPe6zhD8.jpg" alt="fail.jpg"></p>
+</blockquote>
+<h2 id="3-对视频进行右键处理"><a href="#3-对视频进行右键处理" class="headerlink" title="3.对视频进行右键处理"></a>3.对视频进行右键处理</h2><p>点击<strong>显示控件</strong></p>
+<blockquote>
+<p><img src="https://i.loli.net/2021/04/04/U41tVIyri3EzSbj.jpg" alt="控件.jpg"><br><img src="https://i.loli.net/2021/04/04/krLGaRxzKS1WbMw.jpg" alt="控件2.jpg"><br>将视频进度条拉到最后<br><img src="https://i.loli.net/2021/04/04/BRepTJdIwjVxmYv.jpg" alt="拉到最后即可完成视频.jpg"></p>
+</blockquote>
+<blockquote class='blockquote-center'><p>值得一提的是，部分去广告插件可完成此功能，它将对视频进行快进或将视频进度调到最后一秒等操作 </p>
+</blockquote>
+
+<hr>
+<h1 id="题目答案获取"><a href="#题目答案获取" class="headerlink" title="题目答案获取"></a>题目答案获取</h1><h3 id="1-对题目进行右键检查"><a href="#1-对题目进行右键检查" class="headerlink" title="1.对题目进行右键检查"></a>1.对题目进行右键检查</h3><p><img src="https://i.loli.net/2021/04/04/a3ckvyLC27SYdQx.jpg" alt="检查.jpg"></p>
+<p><img src="https://i.loli.net/2021/04/04/cqlHza76dhyvtsB.jpg" alt="调试.jpg"><br>看<strong>w1,w2,w3,w4</strong>的那几行</p>
+<blockquote>
+<p>data-a=”1”即正确<br> data-a=”2”或其他数字即错误</p>
+<blockquote>
+<p>多个 data-a=”1”即多个答案</p>
+</blockquote>
+</blockquote>
+<pre><code>&lt;div class=&quot;section2 topindex1&quot;&gt;
+            &lt;div class=&quot;w0&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w1 option&quot; data-a=&quot;1&quot; data-b=&quot;21&quot; data-c=&quot;5&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w2 option&quot; data-a=&quot;2&quot; data-b=&quot;22&quot; data-c=&quot;6&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w3 option&quot; data-a=&quot;2&quot; data-b=&quot;23&quot; data-c=&quot;7&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w4 option&quot; data-a=&quot;2&quot; data-b=&quot;24&quot; data-c=&quot;8&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w21&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w22&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w23&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w24&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w5&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w6&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w7&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;w8&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;button&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;anster&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;continue&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;tuan&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+</code></pre>
+<div class="note danger">
+            <h3 id="重复右键检查更新控制台答案"><a href="#重复右键检查更新控制台答案" class="headerlink" title="重复右键检查更新控制台答案"></a>重复右键检查更新控制台答案</h3><p><img src="https://i.loli.net/2021/04/04/XojRH4FE29ySPhm.jpg" alt="重新.jpg"></p>
+          </div>
+
+<hr>
+<div class="note success">
+            <h3 id="大功告成"><a href="#大功告成" class="headerlink" title="大功告成"></a>大功告成</h3><p><img src="https://i.loli.net/2021/04/04/wnoj8Za5QeOH7l4.jpg" alt="完成.jpg"></p>
+          </div>
+
+<blockquote class='blockquote-center'><p>其实，这种方法对于不习惯电脑及浏览器操作的极其困难，但从原理上看，制作一个破解脚本并不难(如tampermonkey或其他js调试脚本) </p>
+</blockquote>]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+      <tags>
+        <tag>html</tag>
+        <tag>青年大学习</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hello World</title>
-    <url>/2021/02/04/hello-world/</url>
+    <url>/undefined/16107.html</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
 <a id="more"></a>
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;
