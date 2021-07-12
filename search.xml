@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>关于Freenom注册域名的一些问题</title>
+    <url>/2021/%E7%BD%91%E7%BB%9C/45489/</url>
+    <content><![CDATA[<div class="note warning">
+            <p>本文主要针对freenom的域名注册问题，其他问题请参考<a href="https://my.freenom.com/knowledgebase.php?language=english">官方文档</a>(English)</p>
+          </div>
+
+<blockquote>
+<p>Freenom是目前我认为<strong>唯一</strong>值得信赖的免费域名注册商</p>
+</blockquote>
+<h3 id="首先要说的是Freenom为了防止恶意注册启用了两大机制："><a href="#首先要说的是Freenom为了防止恶意注册启用了两大机制：" class="headerlink" title="首先要说的是Freenom为了防止恶意注册启用了两大机制："></a>首先要说的是Freenom为了防止恶意注册启用了两大机制：</h3><ul>
+<li>机器人检测</li>
+<li>IP与注册信息匹配检测</li>
+</ul>
+<h1 id="1-关于机器人检测"><a href="#1-关于机器人检测" class="headerlink" title="1. 关于机器人检测"></a>1. 关于机器人检测</h1><p>Freenom采用的机器人检测服务已被GFW污染，所以大部分中国网络难以提交订单,Freenom会提醒你无法检测你是否为真人。</p>
+<h1 id="2-关于IP与注册信息匹配检测"><a href="#2-关于IP与注册信息匹配检测" class="headerlink" title="2. 关于IP与注册信息匹配检测"></a>2. 关于IP与注册信息匹配检测</h1><p>在提交订单的时候，下方也许会有这样的提示 </p>
+<blockquote>
+<p>Complete Order<br>This order form is provided in a secure environment and to help protect against fraud your current IP address (xxx.xxx.xxx.xxx) is being logged.</p>
+</blockquote>
+<p>注意这个ip归属地必须和你注册账号时预留下的信息相同相同，否则会提示无法完成订单。<strong>且这个ip不一定是你科学上网的ip</strong>，具体原因未知。</p>
+<h1 id="3-各解决方法"><a href="#3-各解决方法" class="headerlink" title="3. 各解决方法"></a>3. 各解决方法</h1><ul>
+<li>最好的办法<ul>
+<li>上面说freenom的ip检测有点问题，但经过发现直连时的IP是准确的，但不使用科学上网就无法进行机器人验证，我们可以<strong>将科学上网工具改成直连模式</strong>，账户信息中国即可完成。</li>
+</ul>
+</li>
+<li>比较麻烦的方法<ul>
+<li>如果你的科学上网工具没有直链模式，我们在提交订单的时候注意freenom提示的IP，利用ip查询地址网站查看归属地，如果相同，那么你应该可以顺利完成订单。如果不是，请<strong>将账户信息改为此IP归属地</strong>。</li>
+</ul>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>域名</tag>
+        <tag>freenom</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>青年大摸鱼</title>
     <url>/2021/%E6%97%A5%E5%B8%B8/49d2f037/</url>
     <content><![CDATA[<div class="note warning">
@@ -16,6 +55,7 @@
 <blockquote>
 <p>需要手机电脑在同一网络下进行操作</p>
 </blockquote>
+<p><a href="https://h5.cyol.com/special/daxuexi/daxuexiall11/m.html?t=1">&gt;青年大学习合集&lt;</a></p>
 <h1 id="跳过视频"><a href="#跳过视频" class="headerlink" title="跳过视频"></a>跳过视频</h1><h2 id="1-微信中选择一期来做"><a href="#1-微信中选择一期来做" class="headerlink" title="1.微信中选择一期来做"></a>1.微信中选择一期来做</h2><p><img src="https://i.loli.net/2021/04/04/aUsE85ucTSG4Zwv.jpg" alt="这里我们选第十一期"></p>
 <h2 id="2-复制链接发送至电脑"><a href="#2-复制链接发送至电脑" class="headerlink" title="2.复制链接发送至电脑"></a>2.复制链接发送至电脑</h2><p><img src="https://i.loli.net/2021/04/04/8gjcKQh3xkHT1fE.jpg" alt="图片错了，下面的演示应该是第三期"><br><img src="https://i.loli.net/2021/04/04/ymD8iEnBavYcUGk.jpg" alt="处于安全考虑，本文章对链接等可能泄露隐私的图片打码"></p>
 <blockquote>
@@ -72,6 +112,7 @@
 <blockquote class='blockquote-center'><p>其实，这种方法对于不习惯电脑及浏览器操作的极其困难，但从原理上看，制作一个破解脚本并不难(如tampermonkey或其他js调试脚本) </p>
 </blockquote>]]></content>
       <categories>
+        <category>网络</category>
         <category>日常</category>
       </categories>
       <tags>
