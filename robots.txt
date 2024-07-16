@@ -1,0 +1,137 @@
+User-agent: Googlebot
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Googlebot-Image
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Baiduspider-news
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Baiduspider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Baiduspider-render
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Baiduspider-image
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sosospider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: bingbot
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: 360Spider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: HaosouSpider 
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: yisouspider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: YoudaoBot
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou Orion spider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou News Spider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou blog
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou spider2
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou inst spider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Sogou web spider
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: EasouSpider
+Request-rate: 1/2 # load 1 page per 2 seconds
+Crawl-delay: 10
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: MSNBot
+Request-rate: 1/2 # load 1 page per 2 seconds
+Crawl-delay: 10
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: PetalBot
+Request-rate: 1/2 # load 1 page per 2 seconds
+Crawl-delay: 10
+Disallow: /js/
+Disallow: /css/
+Disallow: /ck/
+Disallow: /dist/
+
+User-agent: Bytespider
+Disallow: /
+
+User-Agent: *
+Disallow: /
