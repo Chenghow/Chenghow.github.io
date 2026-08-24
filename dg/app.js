@@ -2,12 +2,19 @@
   'use strict';
 
   const STORAGE_KEY = 'high-voltage-electrician-study-v3';
-  const SUPPORT_PROMPT_KEY = 'high-voltage-electrician-support-prompt-v1';
   const EXAM_TOTAL = 100;
   const EXAM_JUDGEMENT = 70;
   const EXAM_SINGLE = 30;
   const EXAM_DURATION = 120 * 60;
   const MODES = ['study', 'memorize', 'exam', 'wrong', 'favorites'];
+  const KEY_BINDINGS = [
+    { setting: 'keyOptionA', label: '选择 A', action: 'option', value: 'A' },
+    { setting: 'keyOptionB', label: '选择 B', action: 'option', value: 'B' },
+    { setting: 'keyOptionC', label: '选择 C', action: 'option', value: 'C' },
+    { setting: 'keyOptionD', label: '选择 D', action: 'option', value: 'D' },
+    { setting: 'keyPrevious', label: '上一题', action: 'previous' },
+    { setting: 'keyNext', label: '下一题', action: 'next' }
+  ];
   const MODE_META = {
     study: { label: '刷题模式', icon: '◎', eyebrow: 'PRACTICE', description: '即时判断，错题自动展开解析。' },
     memorize: { label: '背题模式', icon: '▤', eyebrow: 'MEMORIZE', description: '先看答案与解析，熟悉考点和表达。' },
@@ -19,6 +26,8 @@
   const sourceHeadings = Array.from(document.querySelectorAll('body > h3'));
   const questions = parseQuestions(sourceHeadings);
   const questionMap = new Map(questions.map(question => [question.id, question]));
+  const allQuestionIds = questions.map(question => question.id);
+  const questionSearchMap = new Map(questions.map(question => [question.id, `${question.number} ${question.titleText}`.toLowerCase()]));
   const state = loadState();
   const ui = {
     indexQuery: '',
@@ -27,7 +36,6 @@
     indexOpen: false,
     historyOpen: false,
     menuOpen: false,
-    supportPromptOpen: false,
     reviewRecordId: null,
     reviewWrongOnly: false,
     reviewPosition: 0,
@@ -36,6 +44,7 @@
 
   let toastTimer = null;
   let timerHandle = null;
+  let indexSearchFrame = null;
   let app;
 
   function parseQuestions(headings) {
@@ -58,10 +67,10 @@
       const answerRaw = getFieldText(answerItem);
       const answerLabels = normalizeAnswer(answerRaw, options);
       const metadataIndex = metadata ? siblings.indexOf(metadata) : -1;
-      const trailingParagraphs = metadataIndex >= 0 ? siblings.slice(metadataIndex + 1).filter(element => element.tagName === 'P' && cleanText(element.textContent)) : [];
+      const trailingBlocks = metadataIndex >= 0 ? siblings.slice(metadataIndex + 1).filter(isTrailingAnalysisBlock) : [];
       let analysisHtml = getFieldHtml(analysisItem);
-      if (trailingParagraphs.length) {
-        analysisHtml += trailingParagraphs.map(element => `<p>${element.innerHTML}</p>`).join('');
+      if (trailingBlocks.length) {
+        analysisHtml += trailingBlocks.map(element => element.outerHTML.trim()).join('');
       }
 
       return {
@@ -83,6 +92,12 @@
     if (!item) return '';
     const strong = item.querySelector('strong');
     return strong ? cleanText(strong.textContent).replace(/[：:]$/, '') : '';
+  }
+
+  function isTrailingAnalysisBlock(element) {
+    if (!(element instanceof Element)) return false;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'LINK', 'META'].includes(element.tagName)) return false;
+    return Boolean(cleanText(element.textContent));
   }
 
   function getFieldText(item) {
@@ -152,7 +167,13 @@
         favoritesAnswer: true,
         favoritesAnalysis: true,
         examSize: EXAM_TOTAL,
-        memorizeView: '1'
+        keyboardEnabled: true,
+        keyOptionA: 'q',
+        keyOptionB: 'w',
+        keyOptionC: 'e',
+        keyOptionD: 'r',
+        keyPrevious: 'a',
+        keyNext: 'd'
       },
       exams: [],
       examDraft: null,
@@ -214,7 +235,7 @@
       if (!record) return [];
       return (record.questionIds || []).filter(id => !ui.reviewWrongOnly || !isRecordCorrect(record, id));
     }
-    return questions.map(question => question.id);
+    return allQuestionIds;
   }
 
   function getReviewRecord() {
@@ -319,7 +340,7 @@
         <main class="main"><div class="main-inner">
           <div class="mode-heading">
             <div><div class="eyebrow">${meta.eyebrow}</div><h1 class="mode-title">${meta.label}</h1><p class="mode-description">${meta.description}</p></div>
-            <div class="heading-actions">${renderHeadingActions()}<div class="progress-card"><div class="progress-copy"><div class="progress-numbers"><strong>${ids.length ? currentIndex + 1 : 0}</strong><span>/ ${ids.length}</span></div><div class="progress-bar"><span style="width:${progress}%"></span></div></div><span class="index-total">${progress}%</span></div></div>
+            <div class="heading-actions">${renderHeadingActions()}<div class="progress-card"><div class="progress-copy"><div class="progress-numbers"><strong data-progress-current>${ids.length ? currentIndex + 1 : 0}</strong><span>/ ${ids.length}</span></div><div class="progress-bar"><span data-progress-bar style="width:${progress}%"></span></div></div><span class="index-total" data-progress-percent>${progress}%</span></div></div>
           </div>
           ${renderModeBody(ids, currentIndex, question)}
         </div></main>
@@ -331,7 +352,6 @@
 
   function renderHeadingActions() {
     const indexAction = `<button class="ghost-action" data-action="toggle-index"><span>☷</span> 题目索引</button>`;
-    if (state.mode === 'memorize') return `${indexAction}${renderMemorizeViewControls()}`;
     if (state.mode === 'exam') {
       return `${indexAction}<button class="ghost-action" data-action="show-history"><span>▤</span> 历史试卷</button>`;
     }
@@ -342,61 +362,21 @@
     return indexAction;
   }
 
-  function renderMemorizeViewControls() {
-    const current = getMemorizeView();
-    return `<div class="view-switcher" aria-label="背题显示数量"><button class="toggle-button ${current === '1' ? 'active' : ''}" data-action="memorize-view" data-size="1">单题</button><button class="toggle-button ${current === '100' ? 'active' : ''}" data-action="memorize-view" data-size="100">100 题</button><button class="toggle-button ${current === 'all' ? 'active' : ''}" data-action="memorize-view" data-size="all">全部</button></div>`;
-  }
-
-  function getMemorizeView() {
-    const value = String(state.settings.memorizeView || '1');
-    if (value === '10') return '100';
-    return value === '100' || value === 'all' ? value : '1';
-  }
-
   function renderModeBody(ids, currentIndex, question) {
     if (state.mode === 'exam' && !state.examDraft) return renderExamLanding();
     if (!question) return renderEmptyState();
-    if (state.mode === 'exam') return `<div class="exam-panel">${renderExamBanner(ids)}${renderQuestionCard(question, currentIndex, { displayNumber: currentIndex + 1 })}</div>`;
-    if (state.mode === 'examReview') return `<div class="review-tools"><span class="status-pill">${getReviewRecord() ? formatDate(getReviewRecord().createdAt) : '考试记录'}</span><span class="index-total">${ui.reviewWrongOnly ? '当前仅显示错题' : '显示整套试卷'}</span></div>${renderQuestionCard(question, currentIndex, { displayNumber: getExamQuestionNumber(question.id) })}`;
-    if (state.mode === 'memorize' && getMemorizeView() !== '1') return renderMemorizeList(ids, currentIndex);
-    if (state.mode === 'wrong' || state.mode === 'favorites') return `${renderCollectionTools(state.mode, ids)}${renderQuestionCard(question, currentIndex)}`;
-    return renderQuestionCard(question, currentIndex);
+    if (state.mode === 'exam') return `<div class="exam-panel">${renderExamBanner(ids)}${renderQuestionCard(question, currentIndex, { displayNumber: currentIndex + 1, total: ids.length })}</div>`;
+    if (state.mode === 'examReview') return `<div class="review-tools"><span class="status-pill">${getReviewRecord() ? formatDate(getReviewRecord().createdAt) : '考试记录'}</span><span class="index-total">${ui.reviewWrongOnly ? '当前仅显示错题' : '显示整套试卷'}</span></div>${renderQuestionCard(question, currentIndex, { displayNumber: getExamQuestionNumber(question.id), total: ids.length })}`;
+    if (state.mode === 'wrong' || state.mode === 'favorites') return `${renderCollectionTools(state.mode, ids)}${renderQuestionCard(question, currentIndex, { total: ids.length })}`;
+    return renderQuestionCard(question, currentIndex, { total: ids.length });
   }
 
-  function renderMemorizeList(ids, currentIndex) {
-    const view = getMemorizeView();
-    const pageSize = 100;
-    const pageCount = Math.max(1, Math.ceil(ids.length / pageSize));
-    const pageIndex = view === 'all' ? 0 : Math.min(pageCount - 1, Math.floor(currentIndex / pageSize));
-    const pageStart = pageIndex * pageSize;
-    const visibleIds = view === 'all' ? ids : ids.slice(pageStart, pageStart + pageSize);
-    const startNumber = ids.length ? (view === 'all' ? 1 : pageStart + 1) : 0;
-    const endRange = view === 'all' ? visibleIds.length : Math.min(ids.length, pageStart + visibleIds.length);
-    const pageTools = view === 'all' ? `<span class="index-total">已显示全部 ${ids.length} 题</span>` : renderMemorizePager(pageIndex, pageCount, pageStart + 1, endRange);
-    const cards = visibleIds.map((id, offset) => renderQuestionCard(questionMap.get(id), (view === 'all' ? 0 : pageStart) + offset, { compact: true })).join('');
-    const bottomPager = view === '100' ? `<div class="memorize-page-tools memorize-bottom-tools">${pageTools}</div>` : '';
-    return `<div class="memorize-batch"><div class="memorize-batch-toolbar"><div><strong>背题浏览</strong><span>答案默认显示，题号随题目保留</span></div><div class="memorize-page-tools">${pageTools}</div></div><div class="memorize-list">${cards}</div>${bottomPager}</div>`;
-  }
-
-  function renderMemorizePager(pageIndex, pageCount, startNumber, endNumber) {
-    const options = Array.from({ length: pageCount }, (_, index) => {
-      const start = index * 100 + 1;
-      const end = Math.min(questions.length, start + 99);
-      return `<option value="${index}" ${index === pageIndex ? 'selected' : ''}>${start}-${end}</option>`;
-    }).join('');
-    return `<button class="ghost-action nav-button" data-action="memorize-page" data-page="${Math.max(0, pageIndex - 1)}" ${pageIndex <= 0 ? 'disabled' : ''}>← 上一组</button><select class="select-field memorize-group-select" data-memorize-page aria-label="选择题目组">${options}</select><span class="index-total memorize-range-label">第 ${startNumber}-${endNumber} 题</span><button class="primary-action nav-button" data-action="memorize-page" data-page="${Math.min(pageCount - 1, pageIndex + 1)}" ${pageIndex >= pageCount - 1 ? 'disabled' : ''}>下一组 →</button>`;
-  }
-
-  function setMemorizePage(page) {
-    const ids = getModeIds('memorize');
-    const pageCount = Math.ceil(ids.length / 100);
-    if (!pageCount) return;
-    const pageIndex = Math.max(0, Math.min(pageCount - 1, Number(page) || 0));
-    const id = ids[pageIndex * 100];
+  function scrollToQuestion(id) {
     if (!id) return;
-    setProgress('memorize', id);
-    render();
-    window.requestAnimationFrame(() => document.querySelector('.question-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    window.requestAnimationFrame(() => {
+      const target = app.querySelector(`.question-card[data-question-id="${id}"]`);
+      target?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
   }
 
   function getExamQuestionNumber(id) {
@@ -438,8 +418,8 @@
 
   function renderQuestionCard(question, currentIndex, options = {}) {
     const mode = state.mode;
-    const compact = Boolean(options.compact);
     const displayNumber = options.displayNumber || question.number;
+    const total = Number.isFinite(options.total) ? options.total : getModeIds(mode).length;
     const isExam = mode === 'exam';
     const isReview = mode === 'examReview';
     const readOnly = mode === 'memorize' || isReview;
@@ -463,19 +443,17 @@
       return `<button class="${optionClass}" data-action="select-option" data-option="${option.label}" data-question-id="${question.id}" ${disabled}><span class="option-letter">${option.label}</span><span class="option-copy">${option.html}</span></button>`;
     }).join('');
     const answerText = question.answerRaw || question.answerLabels.join(' / ');
-    const answerBlock = isExam ? '' : `<section class="answer-block"><div class="answer-row"><div><div class="answer-label">正确答案</div><div class="answer-value ${visibility.answer ? '' : 'hidden-value'}">${visibility.answer ? escapeHtml(answerText) : '点击右侧按钮查看'}</div></div><button class="text-action" data-action="toggle-reveal" data-part="answer" data-question-id="${question.id}">${visibility.answer ? '隐藏答案' : '显示答案'}</button></div><div class="analysis-wrap"><div class="analysis-head"><span class="analysis-head-left"><span class="answer-label">解析</span><a class="analysis-support-link" href="https://lemonaihub.com/" target="_blank" rel="noreferrer">LemonAI中转提供算力</a></span><button class="text-action" data-action="toggle-reveal" data-part="analysis" data-question-id="${question.id}">${visibility.analysis ? '隐藏解析' : '显示解析'}</button></div><div class="analysis-content ${visibility.analysis ? '' : 'hidden'}">${question.analysisHtml}</div></section>`;
+    const answerBlock = isExam ? '' : `<section class="answer-block"><div class="answer-row"><div><div class="answer-label">正确答案</div><div class="answer-value ${visibility.answer ? '' : 'hidden-value'}">${visibility.answer ? escapeHtml(answerText) : '点击右侧按钮查看'}</div></div><button class="text-action" data-action="toggle-reveal" data-part="answer" data-question-id="${question.id}">${visibility.answer ? '隐藏答案' : '显示答案'}</button></div><div class="analysis-wrap"><div class="analysis-head"><span class="answer-label">解析</span><button class="text-action" data-action="toggle-reveal" data-part="analysis" data-question-id="${question.id}">${visibility.analysis ? '隐藏解析' : '显示解析'}</button></div><div class="analysis-content ${visibility.analysis ? '' : 'hidden'}">${question.analysisHtml}</div></div></section>`;
     const footerLeft = mode === 'wrong' ? `<button class="text-action" data-action="dismiss-wrong" data-question-id="${question.id}">移除错题</button>` : mode === 'favorites' ? `<button class="text-action" data-action="toggle-favorite" data-question-id="${question.id}">取消收藏</button>` : '';
-    const footerRight = `<button class="ghost-action nav-button" data-action="previous" ${currentIndex <= 0 ? 'disabled' : ''}>← 上一题</button><button class="primary-action nav-button" data-action="next" ${currentIndex >= getModeIds(mode).length - 1 ? 'disabled' : ''}>下一题 →</button>`;
-    const footer = compact ? '' : `<div class="card-footer"><div class="footer-left">${footerLeft || '<span class="index-total">选择一个选项后会自动保存进度</span>'}</div><div class="footer-right">${footerRight}</div></div>`;
-    return `<article class="question-card ${compact ? 'compact-question-card' : ''}"><div class="card-toolbar"><div class="question-meta">${selectionControl}<span>第 ${displayNumber} 题</span><span class="type-pill">${escapeHtml(question.type)}</span>${status}</div><button class="icon-action ${favorite ? 'favorite' : ''}" data-action="toggle-favorite" data-question-id="${question.id}" title="${favorite ? '取消收藏' : '收藏题目'}" aria-label="${favorite ? '取消收藏' : '收藏题目'}">${favorite ? '★' : '☆'}</button></div><div class="card-body"><h2 class="question-title">${question.titleHtml}</h2><div class="options">${optionsHtml}</div>${answerBlock}</div>${footer}</article>`;
+    const footerRight = `<button class="ghost-action nav-button" data-action="previous" ${currentIndex <= 0 ? 'disabled' : ''}>← 上一题</button><button class="primary-action nav-button" data-action="next" ${currentIndex >= total - 1 ? 'disabled' : ''}>下一题 →</button>`;
+    const footerHint = mode === 'memorize' ? '背题进度会自动保存' : '选择一个选项后会自动保存进度';
+    const footer = `<div class="card-footer"><div class="footer-left">${footerLeft || `<span class="index-total">${footerHint}</span>`}</div><div class="footer-right">${footerRight}</div></div>`;
+    return `<article class="question-card" data-question-id="${question.id}"><div class="card-toolbar"><div class="question-meta">${selectionControl}<span>第 ${displayNumber} 题</span><span class="type-pill">${escapeHtml(question.type)}</span>${status}</div><button class="icon-action ${favorite ? 'favorite' : ''}" data-action="toggle-favorite" data-question-id="${question.id}" title="${favorite ? '取消收藏' : '收藏题目'}" aria-label="${favorite ? '取消收藏' : '收藏题目'}">${favorite ? '★' : '☆'}</button></div><div class="card-body"><h2 class="question-title">${question.titleHtml}</h2><div class="options">${optionsHtml}</div>${answerBlock}</div>${footer}</article>`;
   }
 
   function renderIndexButtons(ids, currentId) {
     const query = cleanText(ui.indexQuery).toLowerCase();
-    const filtered = query ? ids.filter(id => {
-      const question = questionMap.get(id);
-      return question && (`${question.number} ${question.titleText}`).toLowerCase().includes(query);
-    }) : ids;
+    const filtered = query ? ids.filter(id => questionSearchMap.get(id)?.includes(query)) : ids;
     if (!filtered.length) return '<div class="index-total" style="padding:10px">没有匹配题目</div>';
     return filtered.map(id => {
       const question = questionMap.get(id);
@@ -488,7 +466,6 @@
 
   function renderOverlays(ids, currentId) {
     let html = '';
-    if (ui.supportPromptOpen) html += renderSupportOverlay();
     if (ui.settingsOpen) html += renderSettingsOverlay();
     if (ui.exportOpen) html += renderExportOverlay();
     if (ui.indexOpen) html += renderIndexOverlay(ids, currentId);
@@ -496,20 +473,22 @@
     return html;
   }
 
-  function renderSupportOverlay() {
-    return `<div class="overlay support-overlay" data-overlay="support"><section class="dialog support-dialog"><div class="support-hero"><div class="support-badge">广告</div><h2 class="dialog-title">全部解析由 LemonAI 中转提供算力</h2><p class="dialog-subtitle">如果这份题库对你有帮助，请顺手支持一下。点击可前往 <strong>lemonaihub.com</strong>，关闭后将不再弹出。</p></div><div class="support-actions"><a class="primary-action support-cta" href="https://lemonaihub.com/" target="_blank" rel="noreferrer">前往支持</a><button class="ghost-action" data-action="dismiss-support">关闭并不再提示</button></div></section></div>`;
-  }
-
   function renderIndexOverlay(ids, currentId) {
     return `<div class="overlay" data-overlay="index"><section class="dialog index-dialog"><div class="dialog-head"><div><h2 class="dialog-title">题目索引</h2><p class="dialog-subtitle">当前模式共 ${ids.length} 题，可按题号或题干搜索。</p></div><button class="icon-action" data-action="close-overlay" title="关闭">×</button></div><input class="index-search index-dialog-search" data-index-search value="${escapeHtml(ui.indexQuery)}" placeholder="搜索题号或题干" aria-label="搜索题号或题干"><div class="index-list index-dialog-list">${renderIndexButtons(ids, currentId)}</div></section></div>`;
   }
 
   function renderSettingsOverlay() {
-    return `<div class="overlay" data-overlay="settings"><section class="dialog"><div class="dialog-head"><div><h2 class="dialog-title">练习设置</h2><p class="dialog-subtitle">设置会自动保存到当前浏览器。</p></div><button class="icon-action" data-action="close-overlay" title="关闭">×</button></div><div class="settings-grid"><div class="setting-row"><div class="setting-copy"><strong>背题模式默认显示解析</strong><span>答案始终显示，解析可按需预览</span></div>${renderSwitch('memorizeAnalysis', state.settings.memorizeAnalysis)}</div><div class="setting-row"><div class="setting-copy"><strong>错题模式默认显示答案</strong><span>关闭后仍可在题目中手动显示</span></div>${renderSwitch('wrongAnswer', state.settings.wrongAnswer)}</div><div class="setting-row"><div class="setting-copy"><strong>错题模式默认显示解析</strong><span>适合集中复盘错误原因</span></div>${renderSwitch('wrongAnalysis', state.settings.wrongAnalysis)}</div><div class="setting-row"><div class="setting-copy"><strong>收藏模式默认显示答案</strong><span>打开收藏题目时直接看到答案</span></div>${renderSwitch('favoritesAnswer', state.settings.favoritesAnswer)}</div><div class="setting-row"><div class="setting-copy"><strong>收藏模式默认显示解析</strong><span>打开收藏题目时直接看到解析</span></div>${renderSwitch('favoritesAnalysis', state.settings.favoritesAnalysis)}</div><div class="setting-row setting-info"><div class="setting-copy"><strong>模拟考试规则</strong><span>100 题 · 判断题 70 题 + 单选题 30 题 · 120 分钟 · 判断题在前</span></div><span class="status-pill">固定规则</span></div></div></section></div>`;
+    const keyFields = KEY_BINDINGS.map(renderKeyBindingField).join('');
+    return `<div class="overlay" data-overlay="settings"><section class="dialog"><div class="dialog-head"><div><h2 class="dialog-title">练习设置</h2><p class="dialog-subtitle">设置会自动保存到当前浏览器。</p></div><button class="icon-action" data-action="close-overlay" title="关闭">×</button></div><div class="settings-grid"><div class="setting-row"><div class="setting-copy"><strong>背题模式默认显示解析</strong><span>答案始终显示，解析可按需预览</span></div>${renderSwitch('memorizeAnalysis', state.settings.memorizeAnalysis)}</div><div class="setting-row"><div class="setting-copy"><strong>错题模式默认显示答案</strong><span>关闭后仍可在题目中手动显示</span></div>${renderSwitch('wrongAnswer', state.settings.wrongAnswer)}</div><div class="setting-row"><div class="setting-copy"><strong>错题模式默认显示解析</strong><span>适合集中复盘错误原因</span></div>${renderSwitch('wrongAnalysis', state.settings.wrongAnalysis)}</div><div class="setting-row"><div class="setting-copy"><strong>收藏模式默认显示答案</strong><span>打开收藏题目时直接看到答案</span></div>${renderSwitch('favoritesAnswer', state.settings.favoritesAnswer)}</div><div class="setting-row"><div class="setting-copy"><strong>收藏模式默认显示解析</strong><span>打开收藏题目时直接看到解析</span></div>${renderSwitch('favoritesAnalysis', state.settings.favoritesAnalysis)}</div><div class="setting-row"><div class="setting-copy"><strong>启用自定义快捷键</strong><span>关闭后仍可使用方向键翻题，输入框中不会触发快捷键</span></div>${renderSwitch('keyboardEnabled', state.settings.keyboardEnabled)}</div><div class="keyboard-settings" aria-label="键盘快捷键设置">${keyFields}</div><div class="setting-row setting-info"><div class="setting-copy"><strong>模拟考试规则</strong><span>100 题 · 判断题 70 题 + 单选题 30 题 · 120 分钟 · 判断题在前</span></div><span class="status-pill">固定规则</span></div></div></section></div>`;
   }
 
   function renderSwitch(key, checked) {
     return `<label class="switch"><input type="checkbox" data-setting="${key}" ${checked ? 'checked' : ''}><span class="switch-track"></span></label>`;
+  }
+
+  function renderKeyBindingField(binding) {
+    const value = normalizeKeyBinding(state.settings[binding.setting]).toUpperCase();
+    return `<label class="key-binding"><span>${binding.label}</span><input type="text" maxlength="1" value="${escapeHtml(value)}" data-key-binding="${binding.setting}" aria-label="${binding.label}快捷键" autocomplete="off" spellcheck="false"></label>`;
   }
 
   function renderExportOverlay() {
@@ -528,8 +507,7 @@
   function render() {
     const mode = state.mode;
     const ids = getModeIds(mode);
-    let currentIndex = getModeIndex(mode, ids);
-    if (mode === 'memorize' && getMemorizeView() === '100' && ids.length) currentIndex = Math.floor(currentIndex / 100) * 100;
+    const currentIndex = getModeIndex(mode, ids);
     const question = ids[currentIndex] ? questionMap.get(ids[currentIndex]) : null;
     if (question && mode in state.progress && state.progress[mode] !== question.id) state.progress[mode] = question.id;
     app.innerHTML = appShell(ids, currentIndex, question);
@@ -720,16 +698,12 @@
   function move(delta) {
     const ids = getModeIds(state.mode);
     if (!ids.length) return;
-    if (state.mode === 'memorize' && getMemorizeView() === '100') {
-      const current = getModeIndex(state.mode, ids);
-      setMemorizePage(Math.floor(current / 100) + delta);
-      return;
-    }
     const current = getModeIndex(state.mode, ids);
     const next = Math.max(0, Math.min(ids.length - 1, current + delta));
-    setProgress(state.mode, ids[next]);
+    const id = ids[next];
+    setProgress(state.mode, id);
     render();
-    window.requestAnimationFrame(() => document.querySelector('.question-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    scrollToQuestion(id);
   }
 
   function jumpTo(id) {
@@ -739,7 +713,7 @@
     ui.menuOpen = false;
     ui.indexOpen = false;
     render();
-    window.requestAnimationFrame(() => document.querySelector('.question-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    scrollToQuestion(id);
   }
 
   function handleSettingChange(input) {
@@ -748,6 +722,43 @@
     state.settings[key] = input.checked;
     saveState();
     render();
+  }
+
+  function normalizeKeyBinding(value) {
+    const characters = Array.from(String(value || '').trim().toLowerCase());
+    return characters.length === 1 ? characters[0] : '';
+  }
+
+  function handleKeyBindingChange(input) {
+    const setting = input.dataset.keyBinding;
+    const binding = KEY_BINDINGS.find(item => item.setting === setting);
+    if (!binding) return;
+    const previous = normalizeKeyBinding(state.settings[setting]);
+    const next = normalizeKeyBinding(input.value);
+    if (!next) {
+      input.value = previous.toUpperCase();
+      showToast('快捷键只能设置为单个字符');
+      return;
+    }
+    const conflict = KEY_BINDINGS.find(item => item.setting !== setting && normalizeKeyBinding(state.settings[item.setting]) === next);
+    if (conflict) {
+      input.value = previous.toUpperCase();
+      showToast(`${next.toUpperCase()} 已用于“${conflict.label}”`);
+      return;
+    }
+    state.settings[setting] = next;
+    input.value = next.toUpperCase();
+    saveState();
+    showToast(`“${binding.label}”已设为 ${next.toUpperCase()}`);
+  }
+
+  function selectOptionByLabel(label) {
+    if (state.mode === 'memorize' || state.mode === 'examReview') return;
+    const ids = getModeIds(state.mode);
+    const id = ids[getModeIndex(state.mode, ids)];
+    const question = id ? questionMap.get(id) : null;
+    if (!question || !question.options.some(option => option.label === label)) return;
+    selectOption(id, label);
   }
 
   function exportSet(setName, format) {
@@ -822,23 +833,6 @@
     toastTimer = window.setTimeout(() => element.classList.remove('visible'), 2200);
   }
 
-  function hasDismissedSupportPrompt() {
-    try { return localStorage.getItem(SUPPORT_PROMPT_KEY) === '1'; } catch (error) { return true; }
-  }
-
-  function dismissSupportPrompt() {
-    try { localStorage.setItem(SUPPORT_PROMPT_KEY, '1'); } catch (error) { /* Ignore storage failures. */ }
-    ui.supportPromptOpen = false;
-  }
-
-  function closeOverlays() {
-    ui.settingsOpen = false;
-    ui.exportOpen = false;
-    ui.indexOpen = false;
-    ui.historyOpen = false;
-    render();
-  }
-
   function formatDate(value) {
     if (!value) return '';
     return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
@@ -859,8 +853,11 @@
       return;
     }
     if (event.target.classList.contains('overlay')) {
-      if (event.target.dataset.overlay === 'support') dismissSupportPrompt();
-      closeOverlays();
+      ui.settingsOpen = false;
+      ui.exportOpen = false;
+      ui.indexOpen = false;
+      ui.historyOpen = false;
+      render();
       return;
     }
     const actionElement = event.target.closest('[data-action]');
@@ -872,11 +869,8 @@
     if (action === 'toggle-settings') { ui.settingsOpen = !ui.settingsOpen; ui.exportOpen = false; ui.indexOpen = false; ui.historyOpen = false; render(); return; }
     if (action === 'toggle-export') { ui.exportOpen = !ui.exportOpen; ui.settingsOpen = false; ui.indexOpen = false; ui.historyOpen = false; render(); return; }
     if (action === 'toggle-index') { ui.indexOpen = !ui.indexOpen; ui.settingsOpen = false; ui.exportOpen = false; ui.historyOpen = false; render(); return; }
-    if (action === 'memorize-view') { state.settings.memorizeView = actionElement.dataset.size; saveState(); render(); return; }
-    if (action === 'memorize-page') { setMemorizePage(actionElement.dataset.page); return; }
     if (action === 'show-history') { ui.historyOpen = true; ui.settingsOpen = false; ui.exportOpen = false; ui.indexOpen = false; render(); return; }
-    if (action === 'close-overlay') { closeOverlays(); return; }
-    if (action === 'dismiss-support') { dismissSupportPrompt(); closeOverlays(); return; }
+    if (action === 'close-overlay') { ui.settingsOpen = false; ui.exportOpen = false; ui.indexOpen = false; ui.historyOpen = false; render(); return; }
     if (action === 'select-option') { selectOption(actionElement.dataset.questionId, actionElement.dataset.option); return; }
     if (action === 'toggle-favorite') { toggleFavorite(actionElement.dataset.questionId); return; }
     if (action === 'toggle-reveal') { toggleReveal(actionElement.dataset.questionId, actionElement.dataset.part); return; }
@@ -904,8 +898,8 @@
       setSelection(mode, getModeIds(mode), event.target.checked);
       return;
     }
-    if (event.target.matches('[data-memorize-page]')) {
-      setMemorizePage(event.target.value);
+    if (event.target.matches('[data-key-binding]')) {
+      handleKeyBindingChange(event.target);
       return;
     }
     if (event.target.matches('[data-setting]')) handleSettingChange(event.target);
@@ -923,9 +917,13 @@
     }
     if (!event.target.matches('[data-index-search]')) return;
     ui.indexQuery = event.target.value;
-    const list = app.querySelector('.index-list');
-    const ids = getModeIds(state.mode);
-    if (list) list.innerHTML = renderIndexButtons(ids, ids[getModeIndex(state.mode, ids)]);
+    if (indexSearchFrame) window.cancelAnimationFrame(indexSearchFrame);
+    indexSearchFrame = window.requestAnimationFrame(() => {
+      indexSearchFrame = null;
+      const list = app.querySelector('.index-list');
+      const ids = getModeIds(state.mode);
+      if (list) list.innerHTML = renderIndexButtons(ids, ids[getModeIndex(state.mode, ids)]);
+    });
   }
 
   function onKeyDown(event) {
@@ -941,9 +939,19 @@
       window.requestAnimationFrame(() => app.querySelector('.index-dialog [data-index-search]')?.focus());
       return;
     }
-    if (event.target.matches('input, select, textarea, button')) return;
-    if (event.key === 'ArrowLeft') move(-1);
-    if (event.key === 'ArrowRight') move(1);
+    if (event.target.matches('input, select, textarea, button, [contenteditable="true"]')) return;
+    if (ui.settingsOpen || ui.exportOpen || ui.indexOpen || ui.historyOpen || ui.menuOpen) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); return; }
+    if (event.key === 'ArrowRight') { event.preventDefault(); move(1); return; }
+    if (!state.settings.keyboardEnabled || event.repeat) return;
+    const key = normalizeKeyBinding(event.key);
+    const binding = KEY_BINDINGS.find(item => normalizeKeyBinding(state.settings[item.setting]) === key);
+    if (!binding) return;
+    event.preventDefault();
+    if (binding.action === 'previous') move(-1);
+    else if (binding.action === 'next') move(1);
+    else if (binding.action === 'option') selectOptionByLabel(binding.value);
   }
 
   function init() {
@@ -960,7 +968,7 @@
     app.addEventListener('change', onChange);
     app.addEventListener('input', onInput);
     document.addEventListener('keydown', onKeyDown);
-    ui.supportPromptOpen = !hasDismissedSupportPrompt();
+    window.addEventListener('pagehide', saveState);
     render();
   }
 
